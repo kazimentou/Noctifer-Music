@@ -228,13 +228,15 @@ if( USE_PASSWORD and isset( $_POST['password'] ) ) {
     if ( USE_PASSWORD && !isset ( $_SESSION['authenticated'] ) ) {
         # show "Password required [             ]"
 ?>
-<div id="header"><div id="passwordrequest">
-    Password required
-    <form action="." method="post">
-        <input type="password" name="password" id="passwordinput" />
-        <input type="submit" value="Submit" />
-    </form>
-</div></div>
+<div id="header">
+    <div id="passwordrequest">
+        Password required
+        <form action="." method="post">
+            <input type="password" name="password" id="passwordinput" />
+            <input type="submit" value="Submit" />
+        </form>
+    </div>
+</div>
 <?php
     } else {
 
@@ -380,7 +382,7 @@ if( USE_PASSWORD and isset( $_POST['password'] ) ) {
 <?php
             }
             unset( $file );
-		}
+        }
 ?>
 </div>
 <?php
