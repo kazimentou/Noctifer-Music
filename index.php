@@ -28,52 +28,52 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # +-----------------------------------+
 
 # whether or not to ask for a password, and if yes, the array of allowed passwords to access directory/playlist contents
-$usepassword = true;
-$passwords = array('123', 'abc');
+const USE_PASSWORD = true;
+const PASSWORDS = array('123', 'abc');
 
 # files with the following extensions will be displayed (case-insensitive)
 # note that it depends on your browser whether or not these will actually play
-$allowedextensions = array( 'mp3', 'flac', 'wav', 'ogg', 'opus', 'webm' );
+const ALLOWED_EXTENSIONS = array( 'mp3', 'flac', 'wav', 'ogg', 'opus', 'webm', );
 
 # the following directories and files will not be displayed (case-sensitive)
-$excluded = array( '.', '..', '.git', '.htaccess', '.htpasswd', 'backgrounds', 'cgi-bin', 'docs', 'getid3', 'logs', 'usage' );
+const EXCLUDED_EXTENSIONS = array( '.', '..', '.git', '.htaccess', '.htpasswd', 'backgrounds', 'cgi-bin', 'docs', 'getid3', 'logs', 'usage', );
 
 # the width of the player (in desktop mode)
-$width = '40%';
+const WIDTH = '40%';
 
 # different themes given by their background image and element colours
     # "shore"
-$backgroundimg = './backgrounds/bg_shore.jpg';
-$background = '#222';
-$accentfg = '#000';
-$accentbg = '#fc0';
-$menubg = '#eee';
-$menushadow = '#ddd';
-$gradient1 = '#1a1a1a';
-$gradient2 = '#444';
-$filebuttonfg = '#bbb';
+const BACKGROUND_IMG = './backgrounds/bg_shore.jpg';
+const BACKGROUND = '#222';
+const ACCENT_FG = '#000';
+const ACCENT_BG = '#fc0';
+const MENU_BG = '#eee';
+const MENU_SHADOW = '#ddd';
+const GRADIENT_1 = '#1a1a1a';
+const GRADIENT_2 = '#444';
+const FILE_BUTTON_FG = '#bbb';
 
     # "dark"
-// $backgroundimg = './backgrounds/bg_dark.jpg';
-// $background = '#333';
-// $accentfg = '#000';
-// $accentbg = '#fff';
-// $menubg = '#ddd';
-// $menushadow = '#ccc';
-// $gradient1 = '#1a1a1a';
-// $gradient2 = '#444';
-// $filebuttonfg = '#bbb';
+// const BACKGROUND_IMG = './backgrounds/bg_dark.jpg';
+// const BACKGROUND = '#333';
+// const ACCENT_FG = '#000';
+// const ACCENT_BG = '#fff';
+// const MENU_BG = '#ddd';
+// const MENU_SHADOW = '#ccc';
+// const GRADIENT_1 = '#1a1a1a';
+// const GRADIENT_2 = '#444';
+// const FILE_BUTTON_FG = '#bbb';
 
     # "forest"
-// $backgroundimg = './backgrounds/bg_forest.jpg';
-// $background = '#556555';
-// $accentfg = '#000';
-// $accentbg = '#c4dd2a';
-// $menubg = '#eee';
-// $menushadow = '#ddd';
-// $gradient1 = '#1a1a1a';
-// $gradient2 = '#444';
-// $filebuttonfg = '#bbb';
+// const BACKGROUND_IMG = './backgrounds/bg_forest.jpg';
+// const BACKGROUND = '#556555';
+// const ACCENT_FG = '#000';
+// const ACCENT_BG = '#c4dd2a';
+// const MENU_BG = '#eee';
+// const MENU_SHADOW = '#ddd';
+// const GRADIENT_1 = '#1a1a1a';
+// const GRADIENT_2 = '#444';
+// const FILE_BUTTON_FG = '#bbb';
 
 
 /*
@@ -151,10 +151,10 @@ $filebuttonfg = '#bbb';
 */
 
 
-if( isset( $_POST['password'] ) ) {
-    if ( in_array ( htmlspecialchars( $_POST['password'] ), array_map( 'htmlspecialchars', $passwords ), true ) ) {
+if( USE_PASSWORD and isset( $_POST['password'] ) ) {
+    if ( in_array ( htmlspecialchars( $_POST['password'] ), array_map( 'htmlspecialchars', PASSWORDS ), true ) ) {
         $_SESSION['authenticated'] = 'yes';
-        header( "Location: {$_SERVER['HTTP_REFERER']}" );
+        header( 'Location: ' . $_SERVER['HTTP_REFERER'] );
     } else {
         loadPage('', 'Incorrect password', '');
     }
@@ -225,9 +225,9 @@ if( isset( $_POST['password'] ) ) {
 } elseif( isset( $_GET['dir'] ) )  {
     ### responding to AJAX request for directory contents
 
-    if ( $usepassword && !isset ( $_SESSION['authenticated'] ) ) {
+    if ( USE_PASSWORD && !isset ( $_SESSION['authenticated'] ) ) {
         # show "Password required [             ]"
-        echo <<<PASSWORDREQUEST
+?>
 <div id="header"><div id="passwordrequest">
     Password required
     <form action="." method="post">
@@ -235,7 +235,7 @@ if( isset( $_POST['password'] ) ) {
         <input type="submit" value="Submit" />
     </form>
 </div></div>
-PASSWORDREQUEST;
+<?php
     } else {
 
         $basedir = sanitizeGet( $_GET['dir'] );
@@ -248,50 +248,80 @@ PASSWORDREQUEST;
             $dircontents = getDirContents( $basedir );
 
             # returning header
-            echo '<div id="header">';
-            renderButtons();
-            echo '<div id="breadcrumbs">';
+?>
+<div id="header">
+<?php  renderButtons(); ?>
+    <div id="breadcrumbs">
+<?php
             $breadcrumbs = explode( '/', $basedir );
             for ( $i = 0; $i != sizeof( $breadcrumbs ); $i++ ) {
                 $title = $breadcrumbs[$i] == '.'  ? 'Root'  : $breadcrumbs[$i];
 
                 if ($i == sizeof($breadcrumbs) - 1) {
                     # current directory
-                    echo "<span id=\"breadcrumbactive\">{$title}</span>";
+?>
+        <span id="breadcrumbactive"><?= $title ?></span>
+<?php
                 } else {
                     # previous directories with link
                     $link = rawurlencode( implode( '/', array_slice( $breadcrumbs, 0, $i+1 ) ) );
-                    echo "<span class=\"breadcrumb\" onclick=\"goToDir('{$link}');\">{$title}</span><span class=\"separator\">/</span>";
+?>
+        <span class="breadcrumb" onclick="goToDir('<?= $link ?>');"><?= $title ?></span>
+        <span class="separator">/</span>
+<?php
                 }
             }
-            echo '</div>';
-            echo '</div>';
+?>
+    </div>
+</div>
+<?php
 
             if ( empty( $dircontents['dirs'] ) && empty( $dircontents['files'] ) ) {
                 # nothing to show
-                echo '<div id="filelist" class="list"><div>This directory is empty.</div></div>';
+?>
+<div id="filelist" class="list">
+    <div>This directory is empty.</div>
+</div>
+<?php
             } else {
                 # returning directory list
                 if ( !empty( $dircontents['dirs'] ) ) {
-                    echo '<div id="dirlist" class="list">';
+?>
+<div id="dirlist" class="list">
+<?php
                     foreach ( $dircontents['dirs'] as $dir ) {
                         $link = rawurlencode( $basedir . '/' . $dir );
-                        echo "<div class=\"dir\" onclick=\"goToDir('{$link}');\">{$dir}</div>";
-                    } unset( $dir );
-                    echo '</div>';
+?>
+    <div class="dir" onclick="goToDir('<?= $link ?>');"><?= $dir ?></div>
+<?php
+                    }
+                    unset( $dir );
+?>
+</div>
+<?php
                 }
 
                 # returning file list
                 if ( !empty( $dircontents['files'] ) ) {
-                    echo '<div id="filelist" class="list">';
+?>
+<div id="filelist" class="list">
+<?php
                     foreach ( $dircontents['files'] as $file ) {
                         $link = rawurlencode( $basedir . '/' . $file );
                         $song = pathinfo( $file, PATHINFO_FILENAME );
                         $jslink = str_replace( "'", "\'", $link );
                         $nowplaying = ( isset( $_COOKIE['nm_nowplaying'] ) && $_COOKIE['nm_nowplaying'] == $link ) ? ' nowplaying' : '';
-                        echo "<div class=\"file{$nowplaying}\"><a href=\"?play={$link}\" onclick=\"setPlayMode('browse', '{$jslink}');\">&#x25ba; {$song}</a><div class=\"filebutton\" onclick=\"addToPlaylist('{$jslink}');\" title=\"Add to playlist\">+</div></div>";
-                    } unset( $file );
-                    echo '</div>';
+?>
+    <div class="file<?= $nowplaying ?>">
+        <a href="?play=<?= $link ?>" onclick="setPlayMode('browse', '<?= $jslink ?>');\">&#x25ba; <?= $song ?></a>
+        <div class="filebutton" onclick="addToPlaylist('<?= $jslink ?>');" title="Add to playlist">+</div>
+    </div>
+<?php
+                    }
+                    unset( $file );
+?>
+</div>
+<?php
                 }
             }
         }
@@ -299,33 +329,38 @@ PASSWORDREQUEST;
 } elseif( isset( $_GET['playlist'] ) )  {
     ### responding to AJAX request for playlist contents
 
-    if ( $usepassword && !isset ( $_SESSION['authenticated'] ) ) {
+    if ( USE_PASSWORD && !isset ( $_SESSION['authenticated'] ) ) {
         # show "Password required [             ]"
-        echo <<<PASSWORDREQUEST
-<div id="header"><div id="passwordrequest">
-    Password required
-    <form action="." method="post">
-        <input type="password" name="password" id="passwordinput" />
-        <input type="submit" value="Submit" />
-    </form>
-</div></div>
-PASSWORDREQUEST;
+?>
+<div id="header">
+    <div id="passwordrequest">
+        Password required
+        <form action="." method="post">
+            <input type="password" name="password" id="passwordinput" />
+            <input type="submit" value="Submit" />
+        </form>
+    </div>
+</div>
+<?php
     } else {
         if ( isset( $_COOKIE['nm_songs_playlist'] ) ) {
             $playlist = json_decode( $_COOKIE['nm_songs_playlist'], true );
         }
 
         # returning header
-        echo '<div id="header">';
-        renderButtons();
-        echo '<div id="playlisttitle">Playlist</div>';
-        echo '</div>';
-
+?>
+<div id="header">
+<?php renderButtons(); ?>
+    <div id="playlisttitle">Playlist</div>
+</div>
+<div id="filelist" class="list">
+<?php
         if ( empty( $playlist ) ) {
             # nothing to show
-            echo '<div id="filelist" class="list"><div>This playlist is empty.</div></div>';
+?>
+    <div>This playlist is empty.</div>
+<?php
         } else {
-            echo '<div id="filelist" class="list">';
             foreach ( $playlist as $link ) {
                 $song = pathinfo( $link, PATHINFO_FILENAME );
                 $dir = dirname( $link );
@@ -334,11 +369,21 @@ PASSWORDREQUEST;
 
                 $link = rawurlencode( $link );
                 $nowplaying = ( isset( $_COOKIE['nm_nowplaying'] ) && $_COOKIE['nm_nowplaying'] == $link ) ? ' nowplaying' : '';
-                $jslink = str_replace( "'", "\'", $link );
-                echo "<div class=\"file{$nowplaying}\"><a href=\"?play={$link}\" onclick=\"setPlayMode('playlist', '{$jslink}');\">{$playlistdir}&#x25ba; {$song}<br /></a><div class=\"filebutton\" onclick=\"moveInPlaylist('{$jslink}', -1);\"title=\"Move up\">&#x2191</div><div class=\"filebutton\" onclick=\"moveInPlaylist('{$jslink}', 1);\"title=\"Move down\">&#x2193</div><div class=\"filebutton\" onclick=\"removeFromPlaylist('{$jslink}');\" title=\"Remove from playlist\">&#x00d7</div></div>";
-            } unset( $file );
-            echo '</div>';
-        }
+                $jslink = addslashes($link);
+?>
+    <div class="file<?= $nowplaying ?>">
+        <a href="?play=<?= $link ?>" onclick="setPlayMode('playlist', '<?= $jslink ?>');"><?= $playlistdir ?>&#x25ba; <?= $song ?><br /></a>
+        <div class="filebutton" onclick="moveInPlaylist('<?= $jslink ?>', -1);"title="Move up">&#x2191;</div>
+        <div class="filebutton" onclick="moveInPlaylist('<?= $jslink ?>', 1);"title="Move down">&#x2193;</div>
+        <div class="filebutton" onclick="removeFromPlaylist('<?= $jslink ?>');" title="Remove from playlist">&#x00d7;</div>
+    </div>
+<?php
+            }
+            unset( $file );
+		}
+?>
+</div>
+<?php
     }
 } else {
     ### rendering default site
@@ -358,33 +403,28 @@ function renderButtons() {
     elseif ( isset( $_COOKIE['nm_currentsongdir'] ) ) { $dir = $_COOKIE['nm_currentsongdir']; }
     else { $dir = '.'; }
 
+    # rendering general buttons
+?>
+    <div class="buttons">
+<?php
     # rendering playlist buttons when in playlist mode
     if ( $viewmode == 'playlist' ) {
-        $playlistbuttons = <<<PLBUTTONS
+?>
         <div class="button" onclick="clearPlaylist();"><span>Clear</span></div>
         <div class="separator"></div>
-PLBUTTONS;
-    } else {
-        $playlistbuttons = '';
+<?php
     }
-
-    # rendering general buttons
-    echo <<<BUTTONS
-    <div class="buttons">
-        {$playlistbuttons}
-        <div class="button{$shuffleactive}" id="shufflebutton" onclick="toggleShuffle();"><span>Shuffle</span></div>
+?>
+        <div class="button<?= $shuffleactive ?>" id="shufflebutton" onclick="toggleShuffle();"><span>Shuffle</span></div>
         <div class="separator"></div>
-        <div class="button border{$browseactive}" onclick="goToDir('{$dir}');"><span>Browse</span></div>
-        <div class="button{$playlistactive}" onclick="goToPlaylist('default')"><span>Playlist</span></div>
+        <div class="button border<?= $browseactive ?>" onclick="goToDir('<?= $dir ?>');"><span>Browse</span></div>
+        <div class="button<?= $playlistactive ?>" onclick="goToPlaylist('default')"><span>Playlist</span></div>
     </div>
-BUTTONS;
+<?php
 }
 
 
 function getDirContents( $dir ) {
-    global $excluded, $allowedextensions;
-    $allowedextensions = array_map( 'strtolower', $allowedextensions );
-
     $dirlist = array();
     $filelist = array();
 
@@ -392,11 +432,11 @@ function getDirContents( $dir ) {
     if ( $dh = opendir( $dir ) ) {
         while ( $itemname = readdir( $dh ) ) {
             # ignoring certain files
-            if ( !in_array( $itemname, $excluded ) ) {
+            if ( !in_array( $itemname, EXCLUDED_EXTENSIONS ) ) {
                 if ( is_file( $dir . '/' . $itemname ) ) {
                     # found a file: adding allowed files to file array
                     $info = pathinfo( $itemname );
-                    if ( isset( $info['extension'] ) && in_array( strtolower( $info['extension'] ), $allowedextensions ) ) {
+                    if ( isset( $info['extension'] ) && in_array( strtolower( $info['extension'] ), ALLOWED_EXTENSIONS ) ) {
                         $filelist[] = $info['filename'] . '.' . $info['extension'];
                     }
                 } elseif ( is_dir( $dir . '/' . $itemname ) ) {
@@ -463,20 +503,20 @@ function getSongInfo( $song ) {
         }
 
         return array(
-            "title" => $title,
-            "artist" => $artist,
-            "album" => $album,
-            "year" => $year,
-            "art" => $art
+            'title' => $title,
+            'artist' => $artist,
+            'album' => $album,
+            'year' => $year,
+            'art' => $art
         );
     } else {
         # defaulting to song filename and directory when getID3 is not available
         return array(
-            "title" => basename( $song ),
-            "artist" => dirname( $song ),
-            "album" => '',
-            "year" => '',
-            "art" => ''
+            'title' => basename( $song ),
+            'artist' => dirname( $song ),
+            'album' => '',
+            'year' => '',
+            'art' => ''
         );
     }
 }
@@ -484,7 +524,7 @@ function getSongInfo( $song ) {
 
 function sanitizeGet( $str ) {
     $str = stripslashes( $str );
-	return $str;
+    return $str;
 }
 
 
@@ -495,7 +535,6 @@ function compareName( $a, $b ) {
 
 
 function loadPage( $song = '', $error = '', $songinfo = array() ) {
-    global $width, $background, $backgroundimg, $accentfg, $accentbg, $menubg, $menushadow, $gradient1, $gradient2, $filebuttonfg;
 
     # hiding error message div if there is no message to display
     $errordisplay = empty( $error ) ? 'none' : 'block';
@@ -517,7 +556,7 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
         $songtitle = 'No file playing';
         $songinfoalign = 'center';
         $songsrc = '';
-        $pagetitle = "Music";
+        $pagetitle = 'Music';
 
         # hiding info elements
         $artist = '';
@@ -533,7 +572,7 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
         $artdisplay = 'none';
     } else {
         # displaying info elements where available
-        $songsrc = " src=\"" . implode('/', array_map('rawurlencode', explode('/', $song))) . "\""; # encoding individual path elements while keeping separators
+        $songsrc = ' src="' . implode('/', array_map('rawurlencode', explode('/', $song))) . '"'; # encoding individual path elements while keeping separators
         $songtitle = $songinfo['title'];
         $pagetitle = $songtitle;
         if ( !empty( $songinfo['artist'] ) ) {
@@ -570,15 +609,12 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
 
     # writing page
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
     <meta charset="utf-8" />
-
     <title><?= $pagetitle ?></title>
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" id="viewport" />
-
     <script>
         function goToDir(dir) {
             setCookie('nm_viewmode', 'browse', 7);
@@ -950,7 +986,7 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
                     advance('previous');
                 }
             })
-	    // Get and set volume with cookie
+        // Get and set volume with cookie
             var audio = document.getElementById('audio');
             audio.addEventListener('volumechange', function() {
                 setCookie('volume', audio.volume, 14);
@@ -969,7 +1005,7 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
                 font-family: sans-serif; }
 
             html {
-                    background: <?= $background ?> url('<?= $backgroundimg ?>') no-repeat fixed center top;
+                    background: <?= BACKGROUND ?> url('<?= BACKGROUND_IMG ?>') no-repeat fixed center top;
                     background-size: cover;}
 
             body {
@@ -986,10 +1022,10 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
             #playercontainer {
                     padding: 20px 0;
                     background-color: #333;
-                    background-image: linear-gradient(<?= $gradient1 ?>, <?= $gradient2 ?>); }
+                    background-image: linear-gradient(<?= GRADIENT_1 ?>, <?= GRADIENT_2 ?>); }
 
                 #player {
-                        width: <?= $width ?>;
+                        width: <?= WIDTH ?>;
                         margin: 0 auto;
                         display: flex;
                         box-sizing: border-box;
@@ -1042,11 +1078,11 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
 
                 #divider {
                         height: 2px;
-                        background-color: <?= $accentbg ?>; }
+                        background-color: <?= ACCENT_BG ?>; }
 
         #error {
                 box-sizing: border-box;
-                width: <?= $width ?>;
+                width: <?= WIDTH ?>;
                 display: <?= $errordisplay ?>;
                 color: white;
                 text-align: center;
@@ -1066,7 +1102,7 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
                     overflow: hidden;
                     flex-wrap: wrap;
                     font-size: 0;
-                    width: <?= $width ?>;
+                    width: <?= WIDTH ?>;
                     margin: 0 auto 10px auto; }
 
                 #playlisttitle, #breadcrumbs, #passwordrequest {
@@ -1074,7 +1110,7 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
                         margin-top: 10px;
                         flex-grow: 1;
                         color: #333;
-                        background-color: <?= $menubg ?>; }
+                        background-color: <?= MENU_BG ?>; }
 
                     #playlisttitle {
                             font-weight: bold;
@@ -1098,7 +1134,7 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
 
                     .breadcrumb:hover {
                             cursor: pointer;
-                            background-color: <?= $menushadow ?>; }
+                            background-color: <?= MENU_SHADOW ?>; }
 
                     #breadcrumbactive {
                             font-weight: bold; }
@@ -1111,33 +1147,33 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
 
                     .button {
                             padding: 10px;
-                            background-color: <?= $menubg ?>;  }
+                            background-color: <?= MENU_BG ?>;  }
 
                         .button:hover {
                                 cursor: pointer;
-                                background-color: <?= $menushadow ?>; }
+                                background-color: <?= MENU_SHADOW ?>; }
 
                         .border {
-                            border-right: 1px solid <?= $menushadow ?>; }
+                            border-right: 1px solid <?= MENU_SHADOW ?>; }
 
                         .active {
                                 font-weight: bold;  }
 
                             .active span {
-                                    border-bottom: 2px solid <?= $accentbg ?>; }
+                                    border-bottom: 2px solid <?= ACCENT_BG ?>; }
 
                 .separator {
                         color: #bbb;
                         padding: 0 5px; }
 
             .list div {
-                    width: <?= $width ?>;
+                    width: <?= WIDTH ?>;
                     box-sizing: border-box;
                     margin: 0 auto;
                     padding: 5px 10px;
                     color: #333;
-                    background-color: <?= $menubg ?>;
-                    border-bottom: 1px solid <?= $menushadow ?>; }
+                    background-color: <?= MENU_BG ?>;
+                    border-bottom: 1px solid <?= MENU_SHADOW ?>; }
 
                 .list div:last-child {
                         margin-bottom: 10px;
@@ -1145,18 +1181,18 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
 
                 .list .dir:hover, .list .file:hover {
                         cursor: pointer;
-                        background-color: <?= $menushadow ?>;
+                        background-color: <?= MENU_SHADOW ?>;
                         font-weight: bold; }
 
                 .list .nowplaying {
-                        background-color: <?= $accentbg ?>;
+                        background-color: <?= ACCENT_BG ?>;
                         font-weight: bold; }
 
                     .nowplaying > div {
-                            background-color: <?= $accentbg ?>; }
+                            background-color: <?= ACCENT_BG ?>; }
 
                     .nowplaying:hover > div {
-                            background-color: <?= $menubg ?>; }
+                            background-color: <?= MENU_BG ?>; }
 
                 .list .file {
                         display: flex;
@@ -1172,7 +1208,7 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
                         text-decoration: none; }
 
                 .list .nowplaying a {
-                        color: <?= $accentfg ?>; }
+                        color: <?= ACCENT_FG ?>; }
 
                 .list .file a:active {
                         display: block;
@@ -1186,7 +1222,7 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
                         min-width: 25px;
                         height: 25px;
                         min-height: 25px;
-                        color: <?= $filebuttonfg ?>;
+                        color: <?= FILE_BUTTON_FG ?>;
                         text-align: center;
                         font-weight: normal;
                         margin: 0;
@@ -1195,8 +1231,8 @@ function loadPage( $song = '', $error = '', $songinfo = array() ) {
                         display: block; }
 
                     .list .file .filebutton:hover {
-                            color: <?= $accentfg ?>;
-                            background-color: <?= $accentbg ?>; }
+                            color: <?= ACCENT_FG ?>;
+                            background-color: <?= ACCENT_BG ?>; }
 
                 .list .file .playlistdirectory {
                         width: 100%;
